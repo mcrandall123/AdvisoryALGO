@@ -4,25 +4,39 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const dotenv = require("dotenv");
 const { Deta } = require("deta");
-
-// application setup
 const app = express();
+const http = require('http').createServer(app)
+const multer  = require('multer')
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now())
+  }
+})
+const upload = multer({storage})
+// application setup
+
 dotenv.config();
 
 const deta = Deta(process.env.PROJECT_KEY);
-const rubrics = deta.Base("rubrics");
+
 
 // application configuration
 app.use(express.static("public"));
 
 
-
+app.post('/uploads',upload.single("Data"),(req,res)=>{
+    console.log(req.body);
+})
 
 // application routes
 app.get("/", (request, response) => {
-
+    response.sendFile(__dirname + "/Views/index.html")
 });
 
 
-// start server
-app.listen(8080);
+http.listen(3000, () => {
+  console.log('listening on *:3000');
+});
